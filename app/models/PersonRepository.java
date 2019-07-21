@@ -14,4 +14,10 @@ public interface PersonRepository {
     CompletionStage<Person> add(Person person);
 
     CompletionStage<Stream<Person>> list();
+
+    CompletionStage<Person> remove(Person person);
+
+    Person getPersonById(int id);
+
+//    CompletionStage<Person> getPerson(int id);
 }

@@ -3,7 +3,9 @@ package models;
 import play.db.jpa.JPAApi;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -35,6 +37,16 @@ public class JPAPersonRepository implements PersonRepository {
         return supplyAsync(() -> wrap(em -> list(em)), executionContext);
     }
 
+    @Override
+    public CompletionStage<Person> remove(Person person) {
+        return supplyAsync(() -> wrap(em -> delete(em, person)), executionContext);
+    }
+
+    private Person delete(EntityManager em, Person person) {
+        em.remove(em.contains(person) ? person : em.merge(person));
+        return person;
+    }
+
     private <T> T wrap(Function<EntityManager, T> function) {
         return jpaApi.withTransaction(function);
     }
@@ -47,5 +59,15 @@ public class JPAPersonRepository implements PersonRepository {
     private Stream<Person> list(EntityManager em) {
         List<Person> persons = em.createQuery("select p from Person p", Person.class).getResultList();
         return persons.stream();
+    }
+
+//    @Override
+//    public CompletionStage<Person> getPerson(int id) {
+//        return supplyAsync(() -> wrap(em -> getPersonById(em, id)), executionContext);
+//    }
+
+    public Person getPersonById (int id) {
+        Person person = (Person) jpaApi.em("default").createQuery("select p from Person p where p.id = :idPerson").setParameter("idPerson",Long.valueOf(id)).getSingleResult();
+        return person;
     }
 }

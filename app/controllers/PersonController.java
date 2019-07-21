@@ -40,6 +40,7 @@ public class PersonController extends Controller {
         Person person = formFactory.form(Person.class).bindFromRequest(request).get();
         return personRepository
                 .add(person)
+//                .thenApplyAsync(p -> redirect(routes.PersonController.index()), ec.current());
                 .thenApplyAsync(p -> redirect(routes.PersonController.index()), ec.current());
     }
 
@@ -47,6 +48,15 @@ public class PersonController extends Controller {
         return personRepository
                 .list()
                 .thenApplyAsync(personStream -> ok(toJson(personStream.collect(Collectors.toList()))), ec.current());
+    }
+
+    private Person getPerson(int id) {
+        return personRepository.getPersonById(id);
+    }
+
+    public CompletionStage<Result> removePerson(String id) {
+        Person person = getPerson(Integer.valueOf(id));
+        return personRepository.remove(person).thenApplyAsync(p -> ok("person removed : " + toJson(p)));
     }
 
 }
